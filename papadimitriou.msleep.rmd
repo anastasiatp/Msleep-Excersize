@@ -1,0 +1,208 @@
+---
+title: "Homework 3"
+author: "Anastasia Papadimitriou"
+date: "2/13/2022"
+output:
+  pdf_document: default
+  word_document: default
+  html_document:
+    df_print: paged
+---
+(i) Load the tidyverse and ggthemes packages and the msleep data set.
+```{r}
+library(tidyverse)
+library(ggplot2)
+msleep = msleep
+```
+
+(ii) How many mammals are in the msleep data frame? How many variables?
+
+There are 11 variables and 83 mammals in the msleep data frame.
+
+```{r}
+summary(msleep)
+```
+```{r}
+(msleep$name)
+```
+
+(iii) You want to explore if total sleep time has a relationship with mammal body weight.
+
+• Write out a question about the relationship
+
+Does the body weight of a mammal affect its total sleep time?
+
+• What is your response variable and what type is it?
+
+The response variable is the total sleep time. 
+
+• What is your explanatory variable and what type is it?
+
+The explanatory variable is the body weight.
+
+• What is the appropriate type of plot given the types of variables?
+
+The appropriate type of plot is a scatter plot because they are continuous variables.
+
+Create the appropriate plot with body weight against the total amount of sleep.
+
+```{r}
+ggplot(data = msleep) +
+  geom_point(mapping = aes(x = bodywt, y = sleep_total))
+```
+• Interpret the plot in one sentence: what does the shape tell you about the relationship?
+
+The higher the body weight of the mammal, the less total sleep time it has. 
+
+When you see a curved or skewed relationship in a plot, you can often get rid of the curve or skew by taking a log transformation of either the explanatory or the response variable or both.
+
+• Create three plots:
+
+(a) log(x),
+
+```{r}
+ggplot(data = msleep) + geom_point(mapping = aes(x = bodywt, y = sleep_total)) + scale_x_log10()
+```
+(b) log(y) and
+
+```{r}
+ggplot(data = msleep) +
+  geom_point(mapping = aes(x = bodywt, y = sleep_total)) + scale_y_log10()
+```
+(c) log(x) and log (y)
+
+```{r}
+ggplot(data = msleep) +
+  geom_point(mapping = aes(x = bodywt, y = sleep_total)) + scale_y_log10() + scale_x_log10()
+```
+
+• Which plot appears best (most linear) to you and why?
+
+Log(x) because log(y) was the same as before, while log(x) shows that it is more linear.
+
+Color code the plot in part 4 by the diet of the animals (vore).
+• Make the axis labels nice,
+• Change the theme to black and white, and
+• Add a meaningful title to the plot.
+
+```{r}
+ggplot(data = msleep) + 
+  geom_point(mapping = aes(x = bodywt, y = sleep_total, color = vore)) + labs(title = "Relationship Between Total Sleep and Mammal Body Weight") + xlab("Body Weight (KG)") + ylab("Total Sleep Time (Hours)") +
+  theme_bw()
+```
+(vi) Copy the plot from part 5 and add an OLS (Ordinary Least Square) line (without standard errors) for each vore category.
+
+```{r}
+ggplot(msleep,aes(log(sleep_total),log(bodywt),color=vore)) +
+  geom_point() +
+  geom_smooth(method = lm, se=F) +
+  labs(title = "Relationship Between Sleep Total and Body Weight", x = "Log Body Weight (kg)", y = "Log Sleep Total (Hr)") +
+  theme_bw()
+```
+• Does the effect of body weight on sleep total appear larger for some diets?
+
+Yes, it seems to have a larger effect on herbivores because the slope is steeper in the graph.
+
+(vii) Copy the plot from 6 and add the overall (across all vore types) OLS line (without standard errors) to the above plot.
+
+```{r}
+ggplot(msleep,aes(log(sleep_total),log(bodywt),color=vore)) +
+  geom_point() +
+  geom_smooth(method = lm, se=F, linetype = "dashed", lwd = 0.5) +
+  labs(title = "Relationship Between Sleep Total and Body Weight", x = "Log Body Weight (kg)", y = "Log Sleep Total (Hr)") +
+  theme_bw()
+```
+
+
+• Make sure this new line is dashed, and has width of 0.5.
+
+• In one sentence, how does this line compare to the individual lines?
+
+(viii) Copy the plot from 7 and change the title of the legend to “Diet”
+
+```{r}
+ggplot(msleep,aes(log(sleep_total),log(bodywt),color=vore)) +
+  geom_point() +
+  geom_smooth(method = lm, se=F, linetype = "dashed", lwd = 0.5) +
+  labs(title = "Relationship Between Sleep Total and Body Weight", x = "Log Body Weight (kg)", y = "Log Sleep Total (Hr)") +
+  theme_bw() + labs(col = "Diet")
+```
+
+Problem 2 
+The flights data frame from the nycflights13 package.
+
+(i) Load and review the data
+
+• Load the tidyverse nycflights 13 packages
+• Load the flights data frame
+• What are the variables
+
+```{r}
+library(nycflights13)
+```
+
+```{r}
+summary(flights)
+```
+
+There are 19 variables in the flights data frame, and the names of the variables are shown above.
+
+• How many observations (rows) are there?
+
+```{r}
+nrow(flights)
+```
+There are 336776 observations.
+
+• Look at the first three rows
+
+```{r}
+head(flights, 3)
+```
+(ii) Worst Plane to Fly
+
+• Which planes (tailnum) have the three worst (highest) average departure delay record?
+
+```{r}
+flights %>%
+  group_by(tailnum) %>%
+  summarise(avg_delay = mean(dep_delay, na.rm=TRUE)) %>% 
+  arrange(desc(avg_delay))
+```
+
+(a) How many flights did each make?
+
+```{r}
+nrow(flights %>% filter(!is.na(dep_time), is.na(arr_time)))
+```
+
+(b) Now only look tailnums where each flew more than 12 flights and find the three tailnums with the highest average departure delay and show the tailnums with their average departure delay and number of flights.
+
+```{r}
+flights3 = flights %>%
+  group_by(tailnum) %>%
+  mutate(n = n()) %>%
+  filter(n>12) %>%
+  summarise(dep_delay_mean = mean(dep_delay, na.rm = TRUE),
+            n=length(tailnum)) %>%
+  arrange(desc(dep_delay_mean))
+
+head(flights,3)
+
+```
+
+
+(iii) Best Time of Day to Fly
+
+• Use a plot to see what hour of the day you should fly to minimize your expected (average) delay time?
+
+```{r, error=T}
+head(top3,3)
+flights %>% select(starts_with("dep"), starts_with("arr")) %>%
+  sapply(function(x){sum(is.na(x))})
+```
+
+
+
+
+
